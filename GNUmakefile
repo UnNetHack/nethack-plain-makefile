@@ -1,6 +1,8 @@
+# standalone Makefile for NetHack 3.4.3
+
 GAMEDIR = nethackdir
 
-CFLAGS = -g -fPIE -fstack-protector
+CFLAGS = -g -fPIE -fstack-protector -fcommon
 LDFLAGS = -fPIE -pie
 
 CPPFLAGS += -Iinclude
