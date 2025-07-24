@@ -1,6 +1,6 @@
 GAMEDIR = nethackdir
 
-CFLAGS = -g -fPIE -fstack-protector
+CFLAGS = -g -fPIE -fstack-protector -fcommon
 LDFLAGS = -fPIE -pie
 
 CPPFLAGS += -Iinclude
