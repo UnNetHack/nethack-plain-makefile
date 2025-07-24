@@ -1,6 +1,12 @@
+# standalone Makefile for NetHack 3.6.7
+
 GAMEDIR = nethackdir
 
-CFLAGS = -g -fPIE -fstack-protector -fcommon
+CFLAGS = -g -fPIE -fstack-protector
+CFLAGS+=-DCOMPRESS='"$(shell command -v gzip)"' -DCOMPRESS_EXTENSION='".gz"'
+CFLAGS+=-DHACKDIR='"."'
+CFLAGS+=-DCURSES_GRAPHICS
+CFLAGS+=-DDUMPLOG
 LDFLAGS = -fPIE -pie
 
 CPPFLAGS += -Iinclude
@@ -9,20 +15,23 @@ CPPFLAGS += -DDLB
 .DELETE_ON_ERROR:
 
 .PHONY: all
-all: src/nethack util/recover dat/nhdat dat/license
+all: src/nethack util/recover dat/nhdat dat/license dat/symbols
 
 .PHONY: install
 install: all
 	mkdir -p $(GAMEDIR)
 	install src/nethack $(GAMEDIR)
 	install util/recover $(GAMEDIR)
-	install -m 644 dat/nhdat dat/license $(GAMEDIR)
+	install -m 644 dat/nhdat dat/license dat/symbols $(GAMEDIR)
+	install -m 644 sys/unix/sysconf $(GAMEDIR)
 	touch $(GAMEDIR)/perm
 	touch $(GAMEDIR)/record
 	touch $(GAMEDIR)/logfile
 	touch $(GAMEDIR)/xlogfile
 	touch $(GAMEDIR)/livelog
 	mkdir -p $(GAMEDIR)/save
+	sed -i 's/WIZARDS=.*/WIZARDS=\*/' $(GAMEDIR)/sysconf
+	sed -i "s/^#DUMPLOGFILE=\/tmp\//DUMPLOGFILE=/" $(GAMEDIR)/sysconf
 
 ##### BINARIES #####
 
@@ -30,22 +39,22 @@ SRCOBJ = allmain.o alloc.o apply.o artifact.o attrib.o ball.o bones.o	\
  botl.o cmd.o dbridge.o decl.o detect.o dig.o display.o dlb.o do.o	\
  do_name.o do_wear.o dog.o dogmove.o dokick.o dothrow.o drawing.o	\
  dungeon.o eat.o end.o engrave.o exper.o explode.o extralev.o files.o	\
- fountain.o hack.o hacklib.o invent.o light.o lock.o mail.o makemon.o	\
+ fountain.o hack.o hacklib.o invent.o isaac64.o light.o lock.o mail.o makemon.o	\
  mapglyph.o mcastu.o mhitm.o mhitu.o minion.o mklev.o mkmap.o		\
  mkmaze.o mkobj.o mkroom.o mon.o mondata.o monmove.o monst.o monstr.o	\
  mplayer.o mthrowu.o muse.o music.o o_init.o objects.o objnam.o		\
  options.o pager.o pickup.o pline.o polyself.o potion.o pray.o		\
- priest.o quest.o questpgr.o read.o recover.o rect.o region.o		\
+ priest.o quest.o questpgr.o read.o rect.o region.o		\
  restore.o rip.o rnd.o role.o rumors.o save.o shk.o shknam.o sit.o	\
- sounds.o sp_lev.o spell.o steal.o steed.o teleport.o tile.o		\
- timeout.o topten.o track.o trap.o u_init.o uhitm.o unicode.o vault.o	\
+ sounds.o sp_lev.o spell.o steal.o steed.o sys.o teleport.o tile.o	\
+ timeout.o topten.o track.o trap.o u_init.o uhitm.o vault.o	\
  version.o vision.o weapon.o were.o wield.o windows.o wizard.o worm.o	\
  worn.o write.o zap.o
 SYSUNIXOBJ = unixmain.o unixres.o unixunix.o
-SYSSHAREOBJ = ioctl.o unixtty.o
+SYSSHAREOBJ = ioctl.o posixregex.o unixtty.o
 WINTTYOBJ = getline.o termcap.o topl.o wintty.o
 WINCURSESOBJ = cursmain.o curswins.o cursmisc.o cursdial.o cursstat.o	\
-               cursinit.o cursmesg.o
+               cursinit.o cursmesg.o cursinvt.o
 
 GAME_O = $(SRCOBJ:%.o=src/%.o) $(SYSUNIXOBJ:%.o=sys/unix/%.o)	\
          $(SYSSHAREOBJ:%.o=sys/share/%.o)			\
@@ -55,7 +64,7 @@ src/nethack: $(GAME_O)
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -lncurses -o $@
 AUTO_BIN += src/nethack
 
-RECOVER_O = util/recover_main.o src/recover.o
+RECOVER_O = util/recover.o
 util/recover: $(RECOVER_O)
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 AUTO_BIN += util/recover
@@ -172,7 +181,7 @@ $(ALL_TAG): dat/%.tag: dat/%.des util/lev_comp
 AUTO_DAT += $(ALL_TAG)
 
 DAT_NHDAT = cmdhelp data dungeon help hh history opthelp options	\
-            oracles quest.dat rumors wizhelp
+            oracles quest.dat rumors wizhelp bogusmon engrave epitaph
 dat/nhdat: util/dlb $(DAT_NHDAT:%=dat/%) $(ALL_TAG)
 	cd dat && ../util/dlb cf nhdat $(DAT_NHDAT) *.lev
 AUTO_DAT += dat/nhdat
@@ -194,6 +203,14 @@ dat/dungeon: dat/dungeon.pdf util/dgn_comp
 dat/dungeon.pdf: dat/dungeon.def util/makedefs
 	cd util && ./makedefs -e  # dat/dungeon.pdf
 AUTO_DAT += dat/dungeon dat/dungeon.pdf
+
+dat/bogusmon: dat/engrave dat/bogusmon.txt util/makedefs
+	cd util && ./makedefs -s
+dat/engrave: dat/epitaph dat/engrave.txt util/makedefs
+	cd util && ./makedefs -s
+dat/epitaph: dat/epitaph.txt util/makedefs
+	cd util && ./makedefs -s
+AUTO_DAT += dat/bogusmon dat/engrave dat/epitaph
 
 ##### CLEANING UP #####
 
