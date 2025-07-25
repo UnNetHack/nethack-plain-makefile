@@ -1,12 +1,13 @@
-# standalone Makefile for NetHack 3.6.7
+# standalone Makefile for NetHack 3.6.7 with PDCurses SDL2
 
 GAMEDIR = nethackdir
 
 CFLAGS = -g -fPIE -fstack-protector
 CFLAGS+=-DCOMPRESS='"$(shell command -v gzip)"' -DCOMPRESS_EXTENSION='".gz"'
 CFLAGS+=-DHACKDIR='"."'
-CFLAGS+=-DCURSES_GRAPHICS
+CFLAGS+=-DCURSES_GRAPHICS -DNOTTYGRAPHICS -DDEFAULT_WINDOW_SYS='"curses"'
 CFLAGS+=-DDUMPLOG
+CFLAGS+=-I./pdcursesmod -DPDCURSES -DPDC_WIDE -DPDC_FORCE_UTF8
 LDFLAGS = -fPIE -pie
 
 CPPFLAGS += -Iinclude
@@ -55,13 +56,14 @@ SYSSHAREOBJ = ioctl.o posixregex.o unixtty.o
 WINTTYOBJ = getline.o termcap.o topl.o wintty.o
 WINCURSESOBJ = cursmain.o curswins.o cursmisc.o cursdial.o cursstat.o	\
                cursinit.o cursmesg.o cursinvt.o
+PDCURSESLIB = pdcursesmod/sdl2/libpdcurses.a
 
 GAME_O = $(SRCOBJ:%.o=src/%.o) $(SYSUNIXOBJ:%.o=sys/unix/%.o)	\
          $(SYSSHAREOBJ:%.o=sys/share/%.o)			\
-         $(WINTTYOBJ:%.o=win/tty/%.o)				\
          $(WINCURSESOBJ:%.o=win/curses/%.o)
-src/nethack: $(GAME_O)
-	$(CC) $(LDFLAGS) $^ $(LDLIBS) -lncurses -o $@
+
+src/nethack: $(GAME_O) $(PDCURSESLIB)
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) -lSDL2 -lSDL2_ttf -o $@
 AUTO_BIN += src/nethack
 
 RECOVER_O = util/recover.o
@@ -211,6 +213,10 @@ dat/engrave: dat/epitaph dat/engrave.txt util/makedefs
 dat/epitaph: dat/epitaph.txt util/makedefs
 	cd util && ./makedefs -s
 AUTO_DAT += dat/bogusmon dat/engrave dat/epitaph
+
+pdcursesmod/sdl2/libpdcurses.a:
+	if [ ! -d pdcursesmod ]; then (git clone https://github.com/Bill-Gray/PDCursesMod.git pdcursesmod); fi
+	cd pdcursesmod/sdl2 && make UTF8=Y WIDE=Y
 
 ##### CLEANING UP #####
 
