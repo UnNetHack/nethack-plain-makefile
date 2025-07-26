@@ -1,13 +1,14 @@
-# standalone Makefile for NetHack 3.7
+# standalone Makefile for NetHack 3.7 with PDCurses SDL2
 
 GAMEDIR = nethackdir
 
 CFLAGS = -g -fPIE -fstack-protector
 CFLAGS+=-DCOMPRESS='"$(shell command -v gzip)"' -DCOMPRESS_EXTENSION='".gz"'
 CFLAGS+=-DHACKDIR='"."'
-CFLAGS+=-DCURSES_GRAPHICS -DCURSES_UNICODE
+CFLAGS+=-DCURSES_GRAPHICS -DCURSES_UNICODE -DNOTTYGRAPHICS -DDEFAULT_WINDOW_SYS='"curses"'
 CFLAGS+=-DDUMPLOG
 CFLAGS+=-D_XOPEN_SOURCE_EXTENDED # for wide char support in ncurses
+CFLAGS+=-I./pdcursesmod -DPDCURSES -DPDC_WIDE -DPDC_FORCE_UTF8
 LDFLAGS = -fPIE -pie
 
 CPPFLAGS += -Iinclude
@@ -58,13 +59,14 @@ SYSSHAREOBJ = ioctl.o posixregex.o unixtty.o
 WINTTYOBJ = getline.o termcap.o topl.o wintty.o
 WINCURSESOBJ = cursmain.o curswins.o cursmisc.o cursdial.o cursstat.o	\
                cursinit.o cursmesg.o cursinvt.o
+PDCURSESLIB = pdcursesmod/sdl2/libpdcurses.a
 
 GAME_O = $(SRCOBJ:%.o=src/%.o) $(SYSUNIXOBJ:%.o=sys/unix/%.o)	\
          $(SYSSHAREOBJ:%.o=sys/share/%.o)			\
-         $(WINTTYOBJ:%.o=win/tty/%.o)				\
          $(WINCURSESOBJ:%.o=win/curses/%.o)
-src/nethack: $(GAME_O)
-	$(CC) $(LDFLAGS) $^ $(LDLIBS) -lncursesw -ltinfo $(LUA_DIR)/liblua.a -lm -ldl -o $@
+
+src/nethack: $(GAME_O) $(PDCURSESLIB)
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) -lSDL2 -lSDL2_ttf $(LUA_DIR)/liblua.a -lm -ldl -o $@
 AUTO_BIN += src/nethack
 
 RECOVER_O = src/hacklib.o util/recover-version.o util/recover.o
@@ -205,6 +207,10 @@ include/nhlua.h:
 	@echo '#include "../$(LUA_DIR)/lualib.h"' >> $@
 	@echo '#include "../$(LUA_DIR)/lauxlib.h"' >> $@
 	@echo '/*nhlua.h*/' >> $@
+
+pdcursesmod/sdl2/libpdcurses.a:
+	if [ ! -d pdcursesmod ]; then (git clone https://github.com/Bill-Gray/PDCursesMod.git pdcursesmod); fi
+	cd pdcursesmod/sdl2 && make UTF8=Y WIDE=Y
 
 ##### CLEANING UP #####
 
