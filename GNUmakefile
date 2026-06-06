@@ -1,4 +1,4 @@
-# standalone Makefile for NetHack 5.0
+# standalone Makefile for NetHack 5.0 with PDCurses SDL2
 
 GAMEDIR = build
 
@@ -64,6 +64,8 @@ WINTTYOBJ = getline.o termcap.o topl.o wintty.o
 WINCURSESOBJ = cursmain.o curswins.o cursmisc.o cursdial.o cursstat.o	\
                cursinit.o cursmesg.o cursinvt.o
 PDCURSESLIB = pdcursesmod/sdl2/libpdcurses.a
+
+$(WINCURSESOBJ:%.o=win/curses/%.o): $(PDCURSESLIB)
 
 GAME_O = $(SRCOBJ:%.o=src/%.o) $(SYSUNIXOBJ:%.o=sys/unix/%.o)	\
          $(SYSSHAREOBJ:%.o=sys/share/%.o)			\
