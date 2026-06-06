@@ -1,4 +1,6 @@
-GAMEDIR = nethackdir
+# standalone Makefile for NetHack 5.0
+
+GAMEDIR = build
 
 CFLAGS = -g -fPIE -fstack-protector
 CFLAGS+=-DCOMPRESS='"$(shell command -v gzip)"' -DCOMPRESS_EXTENSION='".gz"'
@@ -38,14 +40,18 @@ install: all
 SRCOBJ = allmain.o alloc.o apply.o artifact.o attrib.o ball.o bones.o botl.o \
  calendar.o cfgfiles.o cmd.o coloratt.o date.o dbridge.o decl.o detect.o dig.o \
  display.o dlb.o do.o dog.o dogmove.o dokick.o do_name.o dothrow.o do_wear.o \
- drawing.o dungeon.o eat.o end.o engrave.o exper.o explode.o extralev.o files.o \
- fountain.o getpos.o glyphs.o hack.o hacklib.o insight.o invent.o isaac64.o \
+ drawing.o dungeon.o \
+ earlyarg.o eat.o end.o engrave.o exper.o explode.o extralev.o files.o \
+ fountain.o getpos.o glyphs.o hack.o hacklib.o \
+ iactions.o insight.o invent.o isaac64.o \
  light.o lock.o mail.o makemon.o mcastu.o mdlib.o mhitm.o mhitu.o minion.o \
  mklev.o mkmap.o mkmaze.o mkobj.o mkroom.o mon.o mondata.o monmove.o monst.o \
  mplayer.o mthrowu.o muse.o music.o nhlobj.o nhlsel.o nhlua.o nhmd4.o objects.o \
  objnam.o o_init.o options.o pager.o pickup.o pline.o polyself.o potion.o pray.o \
- priest.o quest.o questpgr.o read.o rect.o region.o report.o restore.o rip.o \
- rnd.o role.o rumors.o save.o selvar.o sfbase.o sfstruct.o shk.o shknam.o sit.o \
+ priest.o quest.o questpgr.o \
+ read.o rect.o region.o report.o restore.o revision.o rip.o rnd.o \
+ role.o rumors.o \
+ save.o selvar.o sfbase.o sfstruct.o shk.o shknam.o sit.o \
  sounds.o spell.o sp_lev.o stairs.o steal.o steed.o strutil.o symbols.o sys.o \
  teleport.o timeout.o topten.o track.o trap.o uhitm.o u_init.o utf8map.o vault.o \
  version.o vision.o weapon.o were.o wield.o windows.o wizard.o wizcmds.o worm.o \
@@ -187,7 +193,7 @@ dat/epitaph: dat/epitaph.txt util/makedefs
 	cd util && ./makedefs -1 # dat/epitaph
 AUTO_DAT += dat/bogusmon dat/engrave dat/epitaph
 
-LUA_VERSION ?=5.4.6
+LUA_VERSION ?=5.5.0
 LUA_REPO = https://github.com/lua/lua.git
 LUA_DIR = lib/lua-$(LUA_VERSION)
 
