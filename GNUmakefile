@@ -7,8 +7,20 @@ CFLAGS+=-DCOMPRESS='"$(shell command -v gzip)"' -DCOMPRESS_EXTENSION='".gz"'
 CFLAGS+=-DHACKDIR='"."'
 CFLAGS+=-DCURSES_GRAPHICS -DCURSES_UNICODE
 CFLAGS+=-DDUMPLOG
-CFLAGS+=-D_XOPEN_SOURCE_EXTENDED # for wide char support in ncurses
+NCURSES_CFLAGS := $(shell pkg-config --cflags ncursesw)
+NCURSES_LDFLAGS := $(shell pkg-config --libs ncursesw)
+NCURSES_EXISTS := $(shell pkg-config --exists ncursesw && echo y)
+CFLAGS+=$(NCURSES_CFLAGS)
 LDFLAGS = -fPIE -pie
+
+define ncurses_error_msg
+ncursesw module not found via pkg-config.
+Install pkg-config and the ncursesw development package for your distribution.
+endef
+
+ifeq ($(NCURSES_EXISTS),)
+  $(error $(ncurses_error_msg))
+endif
 
 CPPFLAGS += -Iinclude
 CPPFLAGS += -DDLB
@@ -68,7 +80,7 @@ GAME_O = $(SRCOBJ:%.o=src/%.o) $(SYSUNIXOBJ:%.o=sys/unix/%.o)	\
          $(WINTTYOBJ:%.o=win/tty/%.o)				\
          $(WINCURSESOBJ:%.o=win/curses/%.o)
 src/nethack: $(GAME_O)
-	$(CC) $(LDFLAGS) $^ $(LDLIBS) -lncursesw -ltinfo $(LUA_DIR)/liblua.a -lm -ldl -o $@
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) $(NCURSES_LDFLAGS) $(LUA_DIR)/liblua.a -lm -ldl -o $@
 AUTO_BIN += src/nethack
 
 RECOVER_O = src/hacklib.o util/recover-version.o util/recover.o
