@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout nethack-plain-makefile
+        uses: actions/checkout@v6
+        with:
+          path: makefile-repo
+
+      - name: Checkout NetHack sources
+        uses: actions/checkout@v6
+        with:
+          repository: NetHack/NetHack
+          path: nethack-src
+
+      - name: Copy GNUmakefile into source tree
+        run: cp makefile-repo/GNUmakefile nethack-src/
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libncurses-dev pkg-config
+
+      - name: Install macOS dependencies
+        if: runner.os == 'macOS'
+        run: |
+          brew install ncurses pkg-config
+
+      - name: Set environment variables (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          echo "PKG_CONFIG_PATH=$(brew --prefix ncurses)/lib/pkgconfig" >> "$GITHUB_ENV"
+
+      - name: Build
+        working-directory: nethack-src
+        run: make
+
+      - name: Install
+        working-directory: nethack-src
+        run: make install
+
+      - name: Smoketest
+        run: nethack-src/build/nethack --version
