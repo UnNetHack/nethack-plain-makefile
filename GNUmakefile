@@ -43,9 +43,11 @@ install: all
 	touch $(GAMEDIR)/xlogfile
 	touch $(GAMEDIR)/livelog
 	mkdir -p $(GAMEDIR)/save
-	sed -i 's/WIZARDS=.*/WIZARDS=\*/' $(GAMEDIR)/sysconf
-	sed -i "s/^#DUMPLOGFILE=\/tmp\//DUMPLOGFILE=/" $(GAMEDIR)/sysconf
-	#sed -i 's/PANICTRACE_GDB=1/PANICTRACE_GDB=2/' $(GAMEDIR)/sysconf
+	# sed -i.bak works on BSD/OSX sed and GNU sed
+	sed -i.bak 's/WIZARDS=.*/WIZARDS=\*/' $(GAMEDIR)/sysconf
+	sed -i.bak "s/^#DUMPLOGFILE=\/tmp\//DUMPLOGFILE=/" $(GAMEDIR)/sysconf
+	#sed -i '' 's/PANICTRACE_GDB=1/PANICTRACE_GDB=2/' $(GAMEDIR)/sysconf
+	rm -f $(GAMEDIR)/sysconf.bak
 
 ##### BINARIES #####
 
