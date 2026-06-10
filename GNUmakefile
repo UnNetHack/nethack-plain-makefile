@@ -51,25 +51,7 @@ install: all
 
 ##### BINARIES #####
 
-SRCOBJ = allmain.o alloc.o apply.o artifact.o attrib.o ball.o bones.o botl.o \
- calendar.o cfgfiles.o cmd.o coloratt.o date.o dbridge.o decl.o detect.o dig.o \
- display.o dlb.o do.o dog.o dogmove.o dokick.o do_name.o dothrow.o do_wear.o \
- drawing.o dungeon.o \
- earlyarg.o eat.o end.o engrave.o exper.o explode.o extralev.o files.o \
- fountain.o getpos.o glyphs.o hack.o hacklib.o \
- iactions.o insight.o invent.o isaac64.o \
- light.o lock.o mail.o makemon.o mcastu.o mdlib.o mhitm.o mhitu.o minion.o \
- mklev.o mkmap.o mkmaze.o mkobj.o mkroom.o mon.o mondata.o monmove.o monst.o \
- mplayer.o mthrowu.o muse.o music.o nhlobj.o nhlsel.o nhlua.o nhmd4.o objects.o \
- objnam.o o_init.o options.o pager.o pickup.o pline.o polyself.o potion.o pray.o \
- priest.o quest.o questpgr.o \
- read.o rect.o region.o report.o restore.o revision.o rip.o rnd.o \
- role.o rumors.o \
- save.o selvar.o sfbase.o sfstruct.o shk.o shknam.o sit.o \
- sounds.o spell.o sp_lev.o stairs.o steal.o steed.o strutil.o symbols.o sys.o \
- teleport.o timeout.o topten.o track.o trap.o uhitm.o u_init.o utf8map.o vault.o \
- version.o vision.o weapon.o were.o wield.o windows.o wizard.o wizcmds.o worm.o \
- worn.o write.o zap.o
+SRCOBJ = $(patsubst src/%.c,%.o,$(filter-out $(AUTO_C),$(wildcard src/*.c)))
 
 SYSUNIXOBJ = unixmain.o unixres.o unixunix.o
 SYSSHAREOBJ = ioctl.o posixregex.o unixtty.o
