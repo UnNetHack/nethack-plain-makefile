@@ -42,6 +42,11 @@ jobs:
         run: |
           echo "PKG_CONFIG_PATH=$(brew --prefix ncurses)/lib/pkgconfig" >> "$GITHUB_ENV"
 
+      - name: Fix K&R tparm declaration (macOS)
+        if: runner.os == 'macOS'
+        working-directory: nethack-src
+        run: sed -i '' "s/extern char \*tparm();/extern char *tparm(const char *, ...);/" win/tty/termcap.c
+
       - name: Build
         working-directory: nethack-src
         run: make
