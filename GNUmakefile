@@ -47,6 +47,10 @@ install: all
 	sed -i.bak 's/WIZARDS=.*/WIZARDS=\*/' $(GAMEDIR)/sysconf
 	sed -i.bak "s/^#DUMPLOGFILE=\/tmp\//DUMPLOGFILE=/" $(GAMEDIR)/sysconf
 	#sed -i '' 's/PANICTRACE_GDB=1/PANICTRACE_GDB=2/' $(GAMEDIR)/sysconf
+	if [ "$$(uname -s)" = "Darwin" ]; then \
+	  sed -i.bak 's/^GDBPATH=.*/#GDBPATH=\/usr\/bin\/gdb/' $(GAMEDIR)/sysconf; \
+	  sed -i.bak 's/^GREPPATH=\/bin\/grep/GREPPATH=\/usr\/bin\/grep/' $(GAMEDIR)/sysconf; \
+	fi
 	rm -f $(GAMEDIR)/sysconf.bak
 
 ##### BINARIES #####
